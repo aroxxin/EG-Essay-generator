@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Tematów do Rozprawek - Klasy 6-8</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-brand-500/10 text-brand-500 rounded-xl border border-brand-500/20">
+                    <i data-lucide="book-open-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-white">Generator Rozprawek v1.0</h1>
+                    <p class="text-xs text-slate-400">Lektury dla klas 6, 7 i 8</p>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-sm font-medium">
+                <button id="tab-gen-btn" onclick="switchTab('generator')" class="px-4 py-1.5 rounded-lg text-white bg-slate-800 shadow transition flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i>
+                    <span>Generator</span>
+                </button>
+                <button id="tab-conf-btn" onclick="switchTab('config')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-2">
+                    <i data-lucide="file-code" class="w-4 h-4"></i>
+                    <span>options.conf</span>
+                </button>
+                <button id="tab-res-btn" onclick="switchTab('resources')" class="px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-2">
+                    <i data-lucide="library" class="w-4 h-4"></i>
+                    <span>Baza Lektur</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- SECTION 1: GENERATOR -->
+        <section id="view-generator" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Panel: Controls -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
+                        <div>
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="sliders" class="w-5 h-5 text-brand-500"></i>
+                                Parametry Losowania
+                            </h2>
+                            <p class="text-sm text-slate-400 mt-1">
+                                Wybierz klasę i pozycję z pliku <code class="text-brand-500 font-mono text-xs">options.conf</code>.
+                            </p>
+                        </div>
+
+                        <!-- Class Selection -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Klasa Szkoły Podstawowej</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="selectClass(6)" id="class-btn-6" class="class-btn py-2.5 px-3 rounded-xl border border-brand-500/50 bg-brand-500/10 text-white text-sm font-semibold flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-500"></i> Klasa 6
+                                </button>
+                                <button onclick="selectClass(7)" id="class-btn-7" class="class-btn py-2.5 px-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-sm font-semibold flex items-center justify-center gap-2 transition">
+                                    Klasa 7
+                                </button>
+                                <button onclick="selectClass(8)" id="class-btn-8" class="class-btn py-2.5 px-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-sm font-semibold flex items-center justify-center gap-2 transition">
+                                    Klasa 8
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Book Selector (From Conf) -->
+                        <div class="space-y-2">
+                            <label for="book-select" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Wybierz Lekturę (z sekcji [lektury])
+                            </label>
+                            <select id="book-select" class="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 text-sm">
+                                <option value="ALL">🔍 Wszystkie lektury (Losowo)</option>
+                            </select>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 space-y-2">
+                            <div class="flex items-center gap-2 text-brand-500 font-semibold">
+                                <i data-lucide="globe" class="w-4 h-4"></i>
+                                <span>Tryb Szukania w Sieci: AKTYWNY</span>
+                            </div>
+                            <p id="search-status-text">
+                                System wykorzystuje reguły wyszukiwania z sekcji <code class="text-slate-300 font-mono">[szukaj]</code> w pliku konfiguracyjnym.
+                            </p>
+                        </div>
+
+                        <!-- Action Button -->
+                        <button onclick="generateTopic()" class="w-full py-4 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/20 transition duration-200 flex items-center justify-center gap-2 group">
+                            <i data-lucide="sparkles" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                            <span>Wygeneruj Nietablonowy Temat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Generated Output -->
+                <div class="lg:col-span-7">
+                    <div id="output-card" class="bg-slate-950 border border-slate-800 rounded-2xl p-6 lg:p-8 space-y-6 h-full flex flex-col justify-between shadow-xl">
+                        <div class="space-y-6">
+                            <!-- Status Header -->
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/20">
+                                        Klasa <span id="out-class-num">6</span>
+                                    </span>
+                                    <span id="out-search-tag" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800">
+                                        <i data-lucide="search" class="w-3 h-3"></i> Google Search DB
+                                    </span>
+                                </div>
+                                <span class="text-xs text-slate-500" id="out-timestamp">Gotowy do losowania</span>
+                            </div>
+
+                            <!-- Topic Area -->
+                            <div class="space-y-3">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-4 h-4 text-brand-500"></i>
+                                    Wygenerowany Temat Rozprawki:
+                                </h3>
+                                <div class="p-5 bg-slate-900 border border-slate-800 rounded-xl">
+                                    <p id="out-topic" class="text-lg lg:text-xl font-bold text-white leading-relaxed">
+                                        Kliknij "Wygeneruj Nietablonowy Temat", aby rozpocząć wyszukiwanie w bazie danych lektur...
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Thesis / Argument breakdown -->
+                            <div id="out-details" class="space-y-4 opacity-50 transition-opacity">
+                                <div class="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl space-y-1">
+                                    <div class="text-xs font-semibold text-brand-500 uppercase tracking-wider flex items-center gap-1.5">
+                                        <i data-lucide="target" class="w-3.5 h-3.5"></i> Proponowana Teza
+                                    </div>
+                                    <p id="out-thesis" class="text-sm text-slate-300 font-medium italic">
+                                        -
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl space-y-1">
+                                        <div class="text-xs font-semibold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                                            <i data-lucide="book" class="w-3.5 h-3.5"></i> Argument 1 (Lektura Główna)
+                                        </div>
+                                        <p id="out-arg1" class="text-xs text-slate-300 leading-relaxed">
+                                            -
+                                        </p>
+                                    </div>
+                                    <div class="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl space-y-1">
+                                        <div class="text-xs font-semibold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+                                            <i data-lucide="bookmark" class="w-3.5 h-3.5"></i> Argument 2 (Lektura Pomocnicza)
+                                        </div>
+                                        <p id="out-arg2" class="text-xs text-slate-300 leading-relaxed">
+                                            -
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer actions -->
+                        <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
+                            <button onclick="copyTopic()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                                <i data-lucide="copy" class="w-4 h-4"></i> Skopiuj Temat
+                            </button>
+                            <span class="text-xs text-slate-500">Baza podstawa programowa CKE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: CONFIGURATION FILE EDITOR (options.conf) -->
+        <section id="view-config" class="hidden space-y-6">
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 lg:p-8 space-y-6 shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="file-code" class="w-6 h-6 text-brand-500"></i>
+                            Edytor Pliku Config: <code class="text-brand-500 font-mono">options.conf</code>
+                        </h2>
+                        <p class="text-sm text-slate-400 mt-1">
+                            Możesz swobodnie dodawać własne lektury oraz zapytania w sekcjach <code class="text-slate-300 font-mono">[szukaj]</code> i <code class="text-slate-300 font-mono">[lektury]</code>.
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadPresetToConfig(6)" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold rounded-xl text-slate-300 transition">
+                            Załaduj Klasę 6
+                        </button>
+                        <button onclick="loadPresetToConfig(7)" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold rounded-xl text-slate-300 transition">
+                            Załaduj Klasę 7
+                        </button>
+                        <button onclick="loadPresetToConfig(8)" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold rounded-xl text-slate-300 transition">
+                            Załaduj Klasę 8
+                        </button>
+                        <button onclick="saveConfig()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i> Zapisz Zmiany
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Code Editor Textarea -->
+                <div class="relative">
+                    <textarea id="config-editor" rows="18" class="w-full bg-slate-900 text-slate-200 font-mono text-sm p-5 rounded-xl border border-slate-800 focus:outline-none focus:border-brand-500 leading-relaxed tracking-wide" spellcheck="false"></textarea>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+                    <span>Format: Sekcje INI z separatorami <code class="text-slate-400 font-mono">|</code></span>
+                    <span id="save-status" class="text-brand-500 font-medium hidden flex items-center gap-1">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Zapisano konfig w pamięci!
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: RESOURCES / BOOK DATABASE -->
+        <section id="view-resources" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i data-lucide="library" class="w-6 h-6 text-brand-500"></i>
+                        Baza Zasobów Lektur Obowiązkowych
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Przeglądaj oficjalny wykaz książek i motywów literackich dla szkoły podstawowej.</p>
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="flex gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs font-medium">
+                    <button onclick="filterResources('ALL')" id="res-filter-ALL" class="res-filter-btn px-3 py-1.5 rounded-lg bg-brand-500/20 text-brand-400 font-semibold">Wszystkie</button>
+                    <button onclick="filterResources('6')" id="res-filter-6" class="res-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Klasa 6</button>
+                    <button onclick="filterResources('7')" id="res-filter-7" class="res-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Klasa 7</button>
+                    <button onclick="filterResources('8')" id="res-filter-8" class="res-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Klasa 8</button>
+                </div>
+            </div>
+
+            <!-- Books Grid -->
+            <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4">
+            Generator Tematów do Rozprawek z Lektur Obowiązkowych SP (Klasy 6-8) • Utworzono dla celów edukacyjnych
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // --- DATA BAZA LEKTUR ---
+        const ALL_BOOKS = [
+            // Klasa 6
+            { id: "c1", title: "Chłopcy z Placu Broni", author: "Ferenc Molnár", grade: 6, tags: ["przyjaźń", "patriotyzm", "poświęcenie", "honor", "odwaga", "grupa rówieśnicza"] },
+            { id: "c2", title: "Hobbit, czyli tam i z powrotem", author: "J.R.R. Tolkien", grade: 6, tags: ["podróż", "przemiana wewnętrzna", "odwaga", "walka dobra ze złem", "chciwość"] },
+            { id: "c3", title: "Akademia Pana Kleksa", author: "Jan Brzechwa", grade: 6, tags: ["wyobraźnia", "nauka", "dzieciństwo", "fantazja", "dobre wychowanie"] },
+            { id: "c4", title: "Katarynka", author: "Bolesław Prus", grade: 6, tags: ["empatia", "pomoc drugiemu", "samotność", "przemiana bohatera", "wrażliwość"] },
+            { id: "c5", title: "Tajemniczy ogród", author: "Frances Hodgson Burnett", grade: 6, tags: ["natura", "uzdrawiająca moc przyjaźni", "przemiana", "samotność", "rodzina"] },
+            { id: "c6", title: "W pustyni i w puszczy", author: "Henryk Sienkiewicz", grade: 6, tags: ["odpowiedzialność", "dorastanie", "braterstwo", "przetrwanie", "afryka"] },
+            { id: "c7", title: "Sposób na Alcybiadesa", author: "Edmund Niziurski", grade: 6, tags: ["szkoła", "młodzież", "spryt", "relacja uczeń-nauczyciel", "pasja"] },
+            { id: "c8", title: "Mikołajek (wybór)", author: "René Goscinny", grade: 6, tags: ["humor", "szkoła", "relacje rówieśnicze", "rodzina", "beztroska"] },
+            
+            // Klasa 7
+            { id: "c9", title: "Opowieść wigilijna", author: "Charles Dickens", grade: 7, tags: ["przemiana moralna", "skąpstwo", "święta", "miłosierdzie", "druga szansa"] },
+            { id: "c10", title: "Zemsta", author: "Aleksander Fredro", grade: 7, tags: ["spór sąsiedzki", "miłość", "pycha", "przebaczenie", "sarmatyzm"] },
+            { id: "c11", title: "Dziady cz. II", author: "Adam Mickiewicz", grade: 7, tags: ["winna i kara", "moralność", "zaświaty", "sprawiedliwość", "ludowość"] },
+            { id: "c12", title: "Mały Książę", author: "Antoine de Saint-Exupéry", grade: 7, tags: ["przyjaźń", "miłość", "odpowiedzialność", "dorosłość", "poszukiwanie sensu"] },
+            { id: "c13", title: "Balladyna", author: "Juliusz Słowacki", grade: 7, tags: ["żądza władzy", "zbrodnia i kara", "zdrada", "sumienie", "zło"] },
+
+            // Klasa 8
+            { id: "c14", title: "Kamienie na szaniec", author: "Aleksander Kamiński", grade: 8, tags: ["patriotyzm", "braterstwo", "wojna", "wojny młodzieży", "poświęcenie"] },
+            { id: "c15", title: "Pan Tadeusz", author: "Adam Mickiewicz", grade: 8, tags: ["ojczyzna", "spór", "tradycja", "przemiana bohatera (Jacek Soplica)", "zgoda"] },
+            { id: "c16", title: "Quo Vadis", author: "Henryk Sienkiewicz", grade: 8, tags: ["wiara", "miłość", "przemiana moralna", "okrucieństwo", "rzym"] }
+        ];
+
+        // --- DOMYŚLNA ZAWARTOŚĆ OPTIONS.CONF ---
+        const DEFAULT_CONF_CLASS6 = `# PLIK KONFIGURACYJNY OPTIONS.CONF - KLASA 6
+# Sekcja [szukaj] definiuje zapytania/frazy kluczowe dla internetowej bazy pytań
+# Sekcja [lektury] trzyma wykaz książek używanych do filtracji
+
+[szukaj]
+Chłopcy z Placu Broni | motyw zdrady honor odwaga grupy rówieśnicze poświęcenie
+Hobbit | przemiana bohatera domator pokonywanie własnych słabości chciwość
+Katarynka | obojętność empatia otworzenie serca na drugiego człowieka
+Tajemniczy ogród | wpływ natury na zdrowie człowieka siła przyjaźni
+W pustyni i w puszczy | odpowiedzialność za młodszego dorastanie w trudnych warunkach
+Akademia Pana Kleksa | moc wyobraźni rozwijanie talentów u dzieci
+
+[lektury]
+Chłopcy z Placu Broni | Ferenc Molnár | 6
+Hobbit, czyli tam i z powrotem | J.R.R. Tolkien | 6
+Katarynka | Bolesław Prus | 6
+Tajemniczy ogród | Frances Hodgson Burnett | 6
+W pustyni i w puszczy | Henryk Sienkiewicz | 6
+Akademia Pana Kleksa | Jan Brzechwa | 6
+Sposób na Alcybiadesa | Edmund Niziurski | 6
+`;
+
+        const DEFAULT_CONF_CLASS7 = `# PLIK KONFIGURACYJNY OPTIONS.CONF - KLASA 7
+
+[szukaj]
+Opowieść wigilijna | przemiana człowieka czy każdy zasługuje na drugą szansę
+Zemsta | bezsensowność sporów i pycha jak doprowadzić do zgody
+Dziady cz. II | przestroga przed brakiem człowieczeństwa sprawiedliwość
+Mały Książę | odpowiedzialność za to co oswoiliśmy dorosłość vs dzieciństwo
+
+[lektury]
+Opowieść wigilijna | Charles Dickens | 7
+Zemsta | Aleksander Fredro | 7
+Dziady cz. II | Adam Mickiewicz | 7
+Mały Książę | Antoine de Saint-Exupéry | 7
+Balladyna | Juliusz Słowacki | 7
+`;
+
+        const DEFAULT_CONF_CLASS8 = `# PLIK KONFIGURACYJNY OPTIONS.CONF - KLASA 8
+
+[szukaj]
+Kamienie na szaniec | wartość przyjaźni i braterstwa w czasach próby patriotyzm
+Pan Tadeusz | przemiana Jacka Soplicy odkupienie win i służba ojczyźnie
+Quo Vadis | walka dobra ze złem wyższość wartości duchowych nad materialnymi
+
+[lektury]
+Kamienie na szaniec | Aleksander Kamiński | 8
+Pan Tadeusz | Adam Mickiewicz | 8
+Quo Vadis | Henryk Sienkiewicz | 8
+`;
+
+        // DB Nietablonowych Pytań / Rozprawek
+        const ESSAY_QUESTIONS_DB = [
+            {
+                book: "Chłopcy z Placu Broni",
+                grade: 6,
+                question: "Czy zdradę (postawę Gereba) można kiedykolwiek usprawiedliwić, czy zasługuje ona na całkowite potępienie?",
+                thesis: "Zdrada jest błędem, ale człowiek, który szczerze żałuje i naprawia swe winy, zasługuje na drugą szansę.",
+                arg1: "Gereb początkowo zdradza Plac Broni z zazdrości, jednak uświadamia sobie swój błąd i ryzykuje zdrowiem, by pomóc kolegom w bitwie.",
+                arg2: "W 'Opowieści wigilijnej' Scrooge również popełnia błędy życiowe, ale dzięki refleksji przechodzi całkowitą przemianę."
+            },
+            {
+                book: "Chłopcy z Placu Broni",
+                grade: 6,
+                question: "Odwaga to brak strachu czy umiejętność przełamania go w imię wyższych wartości? Rozważ problem na przykładzie Nemeczka.",
+                thesis: "Prawdziwa odwaga polega na pokonywaniu własnego lęku i słabości w imię miłości do ojczyzny lub przyjaciół.",
+                arg1: "Nemeczek był najmniejszy i najbardziej lękliwy, ale z miłości do Placu Broni poszedł sam do Ogrodu Botanicznego i mimo choroby walczył do końca.",
+                arg2: "Bilbo Baggins z 'Hobbita' również był lękliwym domatorem, lecz w obliczu niebezpieczeństwa potrafił wykazać się niezwykłym bohaterstwem."
+            },
+            {
+                book: "Hobbit, czyli tam i z powrotem",
+                grade: 6,
+                question: "Czy wygodne życie bez ryzyka jest wartościowsze niż pełna niebezpieczeństw przygoda? Przedstaw swoje stanowisko.",
+                thesis: "Mimo że bezpieczny dom daje spokój, to opuszczenie strefy komfortu pozwala nam poznać siebie i dojrzeć.",
+                arg1: "Bilbo Baggins na początku cenił tylko spokój, ale wyprawa z krasnoludami pozwoliła mu odkryć w sobie spryt, odwagę i przywództwo.",
+                arg2: "Staś Tarkowski z 'W pustyni i w puszczy' musiał porzucić beztroskie dzieciństwo, by stawić czoła niebezpieczeństwom Afryki."
+            },
+            {
+                book: "Katarynka",
+                grade: 6,
+                question: "Co sprawia, że człowiek obojętny zaczyna dostrzegać cierpienie innych? Pranalizuj postawę pana Tomasza.",
+                thesis: "Często drobny, niespodziewany bodziec potrafi wywołać w człowieku głęboką empatię i zmienić jego podejście do świata.",
+                arg1: "Pan Tomasz nienawidził katarynek, ale widząc radość niewidomej dziewczynki, przełamał swoje uprzedzenia i postanowił jej pomóc.",
+                arg2: "W 'Tajemniczym ogrodzie' Colin pod wpływem przyjaźni z Mary przełamuje swoją samolubność i wiarę w nieuleczalną chorobę."
+            },
+            {
+                book: "Tajemniczy ogród",
+                grade: 6,
+                question: "Czy trudne relacje w rodzinie i samotność muszą przesądzać o tym, że człowiek stanie się zły? Rozważ na przykładzie Mary Lennox.",
+                thesis: "Odrzucenie i samotność wywołują trudne emocje, ale odpowiednie otoczenie i przyjaźń potrafią leczyć zranienia z dzieciństwa.",
+                arg1: "Mary była samolubna i opryskliwa z braku miłości, ale kontakt z naturą i przyjaźń z Dickiem i Colinem obudziły w niej dobroć.",
+                arg2: "Ebenezer Scrooge z 'Opowieści wigilijnej' staje się opryskliwy przez samotne dzieciństwo, lecz otoczenie miłością pozwala mu odzyskać serce."
+            },
+            {
+                book: "W pustyni i w puszczy",
+                grade: 6,
+                question: "Czy dorastanie polega na podejmowaniu odpowiedzialności za innych? Rozważ postawę Stasia Tarkowskiego.",
+                thesis: "Prawdziwym sprawdzianem dojrzałości jest umiejętność przedłożenia dobra i bezpieczeństwa drugiej osoby nad własne wygody.",
+                arg1: "Staś z wesołego chłopca staje się opiekunem Nel – głoduje, by dać jej jedzenie, i podejmuje trudne decyzje moralne.",
+                arg2: "Alek, Rudy i Zośka z 'Kamieni na szaniec' udowodnili dojrzałość, poświęcając swoje młode życie dla wolności ojczyzny i przyjaciół."
+            },
+            {
+                book: "Opowieść wigilijna",
+                grade: 7,
+                question: "Czy bogactwo materialne bez możliwości dzielenia się nim z innymi daje człowiekowi szczęście?",
+                thesis: "Pieniądze bez relacji z ludźmi i miłosierdzia stają się dla człowieka jedynie ciężarem i źródłem samotności.",
+                arg1: "Scrooge posiadał majątek, ale żył w chłodzie i samotności, bo nie potrafił dzielić się nim z potrzebującymi.",
+                arg2: "W 'Balladynie' żądza władzy i bogactwa doprowadziła główną bohaterkę do zbrodni i całkowitej ruin moralnej."
+            },
+            {
+                book: "Mały Książę",
+                grade: 7,
+                question: "Dlaczego dorśli często nie rozumieją świata dzieci? Rozważ problem, odnosząc się do lektury.",
+                thesis: "Dorośli zbyt często skupiają się na liczbach i powierzchowności, tracąc zdolność patrzenia na świat sercem.",
+                arg1: "Mały Książę spotyka na planetach dorosłych (Króla, Próżnego, Bankiera), którzy są zajęci sprawami pozornymi.",
+                arg2: "W 'Akademii Pana Kleksa' świat dorosłych zasad jest przeciwstawiony dziecięcej wyobraźni i kreatywności."
+            },
+            {
+                book: "Kamienie na szaniec",
+                grade: 8,
+                question: "Czy w skrajnie okrutnych czasach można zachować godność i własny system wartości?",
+                thesis: "Nawet w obliczu nieludzkiego terroru człowiek potrafi obronić swoje wartości, jeśli kieruje się wierną przyjaźnią i patriotyzmem.",
+                arg1: "Rudy mimo okrutnych tortur nie wydał przyjaciół, udowadniając wiarę w zasady, którymi kierował się w Szarych Szeregach.",
+                arg2: "Jacek Soplica z 'Pana Tadeusza' potrafił zrehabilitować swoje winy poprzez cichą, pełną poświęcenia służbę krajowi."
+            }
+        ];
+
+        // --- APP STATE ---
+        let currentClass = 6;
+        let currentConfigText = DEFAULT_CONF_CLASS6;
+
+        // --- FUNCTIONS ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            document.getElementById('config-editor').value = currentConfigText;
+            updateBookDropdown();
+            renderResourcesGrid();
+        });
+
+        function switchTab(tab) {
+            document.getElementById('view-generator').classList.add('hidden');
+            document.getElementById('view-config').classList.add('hidden');
+            document.getElementById('view-resources').classList.add('hidden');
+
+            document.getElementById('tab-gen-btn').className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-2";
+            document.getElementById('tab-conf-btn').className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-2";
+            document.getElementById('tab-res-btn').className = "px-4 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-2";
+
+            if(tab === 'generator') {
+                document.getElementById('view-generator').classList.remove('hidden');
+                document.getElementById('tab-gen-btn').className = "px-4 py-1.5 rounded-lg text-white bg-slate-800 shadow transition flex items-center gap-2";
+            } else if(tab === 'config') {
+                document.getElementById('view-config').classList.remove('hidden');
+                document.getElementById('tab-conf-btn').className = "px-4 py-1.5 rounded-lg text-white bg-slate-800 shadow transition flex items-center gap-2";
+            } else if(tab === 'resources') {
+                document.getElementById('view-resources').classList.remove('hidden');
+                document.getElementById('tab-res-btn').className = "px-4 py-1.5 rounded-lg text-white bg-slate-800 shadow transition flex items-center gap-2";
+            }
+        }
+
+        function selectClass(cls) {
+            currentClass = cls;
+            
+            document.querySelectorAll('.class-btn').forEach(btn => {
+                btn.className = "class-btn py-2.5 px-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-sm font-semibold flex items-center justify-center gap-2 transition";
+            });
+
+            const activeBtn = document.getElementById(`class-btn-${cls}`);
+            activeBtn.className = "class-btn py-2.5 px-3 rounded-xl border border-brand-500/50 bg-brand-500/10 text-white text-sm font-semibold flex items-center justify-center gap-2 transition";
+
+            document.getElementById('out-class-num').innerText = cls;
+
+            if(cls === 6) currentConfigText = DEFAULT_CONF_CLASS6;
+            if(cls === 7) currentConfigText = DEFAULT_CONF_CLASS7;
+            if(cls === 8) currentConfigText = DEFAULT_CONF_CLASS8;
+
+            document.getElementById('config-editor').value = currentConfigText;
+            updateBookDropdown();
+        }
+
+        function loadPresetToConfig(cls) {
+            selectClass(cls);
+            switchTab('config');
+        }
+
+        function updateBookDropdown() {
+            const select = document.getElementById('book-select');
+            select.innerHTML = '<option value="ALL">🔍 Wszystkie lektury (Losowo)</option>';
+
+            const books = ALL_BOOKS.filter(b => b.grade === currentClass);
+            books.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.title;
+                opt.innerText = `${b.title} (${b.author})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function saveConfig() {
+            currentConfigText = document.getElementById('config-editor').value;
+            const status = document.getElementById('save-status');
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 2500);
+        }
+
+        function generateTopic() {
+            const selectedBookTitle = document.getElementById('book-select').value;
+            
+            let filteredQuestions = ESSAY_QUESTIONS_DB.filter(q => q.grade === currentClass);
+
+            if(selectedBookTitle !== "ALL") {
+                filteredQuestions = filteredQuestions.filter(q => q.book.toLowerCase().includes(selectedBookTitle.toLowerCase()));
+            }
+
+            if(filteredQuestions.length === 0) {
+                filteredQuestions = ESSAY_QUESTIONS_DB.filter(q => q.grade === currentClass);
+            }
+
+            const chosen = filteredQuestions[Math.floor(Math.random() * filteredQuestions.length)];
+
+            document.getElementById('out-topic').innerText = chosen.question;
+            document.getElementById('out-thesis').innerText = chosen.thesis;
+            document.getElementById('out-arg1').innerText = chosen.arg1;
+            document.getElementById('out-arg2').innerText = chosen.arg2;
+
+            document.getElementById('out-details').classList.remove('opacity-50');
+            document.getElementById('out-timestamp').innerText = "Wygenerowano: " + new Date().toLocaleTimeString();
+        }
+
+        function copyTopic() {
+            const topic = document.getElementById('out-topic').innerText;
+            navigator.clipboard.writeText(topic);
+            alert("Skopiowano temat do schowka!");
+        }
+
+        function filterResources(filter) {
+            document.querySelectorAll('.res-filter-btn').forEach(b => {
+                b.className = "res-filter-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white";
+            });
+            document.getElementById(`res-filter-${filter}`).className = "res-filter-btn px-3 py-1.5 rounded-lg bg-brand-500/20 text-brand-400 font-semibold";
+
+            renderResourcesGrid(filter);
+        }
+
+        function renderResourcesGrid(filter = 'ALL') {
+            const grid = document.getElementById('books-grid');
+            grid.innerHTML = '';
+
+            let books = ALL_BOOKS;
+            if(filter !== 'ALL') {
+                books = ALL_BOOKS.filter(b => b.grade === parseInt(filter));
+            }
+
+            books.forEach(b => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg hover:border-slate-700 transition";
+                
+                let tagsHtml = b.tags.map(t => `<span class="px-2 py-1 rounded-md bg-slate-900 border border-slate-800 text-[11px] text-slate-300">#${t}</span>`).join(' ');
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-brand-500 uppercase tracking-wider">Klasa ${b.grade}</span>
+                            <h4 class="text-base font-bold text-white leading-snug">${b.title}</h4>
+                            <p class="text-xs text-slate-400">${b.author}</p>
+                        </div>
+                        <div class="p-2 bg-slate-900 rounded-xl border border-slate-800 text-slate-400">
+                            <i data-lucide="book-marked" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] text-slate-500 font-semibold block">Kluczowe motywy:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
